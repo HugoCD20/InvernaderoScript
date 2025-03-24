@@ -2,12 +2,14 @@ import firebase_admin
 from firebase_admin import credentials, firestore,db
 import time
 import datetime
+import pytz
 cred = credentials.Certificate('credentials/credenciales.json')
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://invernadero-90934-default-rtdb.firebaseio.com/' 
 })
 
 baseDatos = firestore.client()
+tz = pytz.timezone('America/Mexico_City')
 
 
 while True:
@@ -16,7 +18,7 @@ while True:
 
     Temperatura = temperatura.get()
     Humedad = humedad.get()
-    now = datetime.datetime.now()
+    now = datetime.now(pytz.utc).astimezone(tz)
 
     doc_ref = baseDatos.collection('Temperatura').document(str(now))
 
