@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore,db
 import time
-import datetime
+from datetime import datetime
 import pytz
 cred = credentials.Certificate('credentials/credenciales.json')
 firebase_admin.initialize_app(cred, {
