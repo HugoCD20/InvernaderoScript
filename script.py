@@ -20,35 +20,32 @@ app = Flask(__name__)
 def actualizar_datos():
     """Función que corre en segundo plano y actualiza los datos cada 5 minutos."""
     while True:
-        temperatura = db.reference('Temperatura').get()
-        humedad = db.reference('Humedad').get()
-        now = datetime.now(pytz.utc).astimezone(tz)
+        try:
+            temperatura = db.reference('Temperatura').get()
+            humedad = db.reference('Humedad').get()
+            now = datetime.now(pytz.utc).astimezone(tz)
 
-        doc_ref = baseDatos.collection('Temperatura').document(str(now))
+            doc_ref = baseDatos.collection('Temperatura').document(str(now))
+            doc_ref.set({
+                'temperatura': str(temperatura),
+                'humedad': str(humedad),
+                'fecha': str(now),
+            })
 
-        doc_ref.set({
-            'temperatura': str(temperatura),
-            'humedad': str(humedad),
-            'fecha': str(now),
-        })
+            print(f"Documento actualizado en Firestore: {now}")
+            time.sleep(300)  # Esperar 5 minutos
 
-        print(f"Documento actualizado en Firestore: {now}")
-
-        time.sleep(300)  # Esperar 5 minutos
+        except Exception as e:
+            print(f"Error detectado: {e}")
+            time.sleep(10)  # Esperar 10 segundos antes de intentar de nuevo
 
 # Iniciar la función en un hilo separado
 threading.Thread(target=actualizar_datos, daemon=True).start()
 
-@app.route('/datos', methods=['GET'])
-def obtener_datos():
-    """API para obtener los últimos datos almacenados en Firestore."""
-    docs = baseDatos.collection('Temperatura').order_by("fecha", direction=firestore.Query.DESCENDING).limit(1).stream()
-    data = next(docs, None)
-    
-    if data:
-        return jsonify(data.to_dict())
-    else:
-        return jsonify({"mensaje": "No hay datos disponibles"}), 404
+@app.route('/ping', methods=['GET'])
+def ping():
+    """Ruta para evitar que Render detenga el servicio."""
+    return jsonify({"status": "activo"}), 200
 
 if __name__ == '__main__':
     import os
