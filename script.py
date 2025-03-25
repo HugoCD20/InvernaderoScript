@@ -1,35 +1,33 @@
+from flask import Flask, jsonify
 import firebase_admin
-from firebase_admin import credentials, firestore,db
-import time
-from datetime import datetime
+from firebase_admin import credentials, firestore, db
 import pytz
+from datetime import datetime
+
+# Inicializar Firebase
 cred = credentials.Certificate('credentials/credenciales.json')
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://invernadero-90934-default-rtdb.firebaseio.com/' 
+    'databaseURL': 'https://invernadero-90934-default-rtdb.firebaseio.com/'
 })
 
 baseDatos = firestore.client()
 tz = pytz.timezone('America/Mexico_City')
 
+app = Flask(__name__)
 
-while True:
-    temperatura = db.reference('Temperatura')
-    humedad = db.reference('Humedad')
-
-    Temperatura = temperatura.get()
-    Humedad = humedad.get()
+@app.route('/datos', methods=['GET'])
+def obtener_datos():
+    temperatura = db.reference('Temperatura').get()
+    humedad = db.reference('Humedad').get()
     now = datetime.now(pytz.utc).astimezone(tz)
 
-    doc_ref = baseDatos.collection('Temperatura').document(str(now))
-
-    # Establecer datos
-    doc_ref.set({
-        'temperatura': str(Temperatura),
-        'humedad': str(Humedad),
-        'fecha': str(now),
+    return jsonify({
+        'temperatura': temperatura,
+        'humedad': humedad,
+        'fecha': str(now)
     })
 
-    print(f"Documento creado con ID: {now}")
-
-    time.sleep(300)
-
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
