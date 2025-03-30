@@ -25,14 +25,18 @@ def actualizar_datos():
             humedad = db.reference('Humedad').get()
             now = datetime.now(pytz.utc).astimezone(tz)
 
-            doc_ref = baseDatos.collection('Temperatura').document(str(now))
-            doc_ref.set({
-                'temperatura': str(temperatura),
-                'humedad': str(humedad),
-                'fecha': str(now),
+            # Convertir a float si los valores no son None
+            temperatura = float(temperatura) if temperatura is not None else None
+            humedad = float(humedad) if humedad is not None else None
+
+            # Guardar los datos en Firestore con un ID automático
+            baseDatos.collection('Temperatura').add({
+                'temperatura': temperatura,
+                'humedad': humedad,
+                'fecha': now.isoformat(),  # Guardamos la fecha en formato ISO
             })
 
-            print(f"Documento actualizado en Firestore: {now}")
+            print(f"Documento agregado en Firestore: {now}")
             time.sleep(300)  # Esperar 5 minutos
 
         except Exception as e:
