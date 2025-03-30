@@ -37,7 +37,7 @@ def actualizar_datos():
             })
 
             print(f"Documento agregado en Firestore: {now}")
-            time.sleep(300)  # Esperar 5 minutos
+            time.sleep(3600)  # Esperar una hora
 
         except Exception as e:
             print(f"Error detectado: {e}")
